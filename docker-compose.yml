@@ -1,0 +1,12 @@
+services:
+  ting-app:
+    container_name: ting-expense-manager
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      # Map the local data folder to the container
+      - ./data:/app/data
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
