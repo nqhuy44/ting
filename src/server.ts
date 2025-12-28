@@ -12,13 +12,12 @@ const PORT = 3000;
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "../public")));
 
-// --- API Routes ---
+// --- API ROUTES ---
 
-// 1. Create Group (with Currency & Fee settings)
+// 1. Create Group
 app.post("/api/groups", async (req, res) => {
   try {
     const { name, passcode, currency, exchangeFee } = req.body;
-
     if (!name) throw new Error("Group name is required");
 
     const group = await core.createGroup(
@@ -29,12 +28,11 @@ app.post("/api/groups", async (req, res) => {
     );
     res.json(group);
   } catch (e: any) {
-    console.error("Create Group Error:", e);
     res.status(500).json({ error: e.message });
   }
 });
 
-// 2. Get Group Details (Currency, Fee, Name)
+// 2. Get Group Details
 app.get("/api/groups/:groupId", async (req, res) => {
   try {
     const group = await core.getGroupDetails(req.params.groupId);
@@ -45,7 +43,23 @@ app.get("/api/groups/:groupId", async (req, res) => {
   }
 });
 
-// 3. Add Member
+// 3. Delete Group
+app.delete("/api/groups/:groupId", async (req, res) => {
+  try {
+    const groupId = req.params.groupId;
+    // Verify existence first
+    const group = await core.getGroupDetails(groupId);
+    if (!group) throw new Error("Group not found");
+
+    await core.deleteGroup(groupId);
+    res.json({ success: true, message: "Group deleted" });
+  } catch (e: any) {
+    console.error("Delete Group Error:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// 4. Add Member
 app.post("/api/members", async (req, res) => {
   try {
     const { groupId, name } = req.body;
@@ -54,12 +68,11 @@ app.post("/api/members", async (req, res) => {
     const member = await core.addMember(groupId, name);
     res.json(member);
   } catch (e: any) {
-    console.error("Add Member Error:", e);
     res.status(500).json({ error: e.message });
   }
 });
 
-// 4. Get Members List
+// 5. Get Members
 app.get("/api/groups/:groupId/members", async (req, res) => {
   try {
     const members = await core.getMembers(req.params.groupId);
@@ -69,17 +82,16 @@ app.get("/api/groups/:groupId/members", async (req, res) => {
   }
 });
 
-// 5. Add Expense (Handles Currency Conversion inputs)
+// 6. Add Expense
 app.post("/api/expenses", async (req, res) => {
   try {
     const { groupId, description, amount, currency, paidBy, sharedBy } =
       req.body;
 
     if (!groupId || !amount || !paidBy || !sharedBy) {
-      throw new Error("Missing required expense fields");
+      throw new Error("Missing required fields");
     }
 
-    // We pass the raw inputs to core.ts, which handles the API conversion logic
     const expense = await core.addExpense(
       groupId,
       description,
@@ -95,38 +107,13 @@ app.post("/api/expenses", async (req, res) => {
   }
 });
 
-// 6. Get Report (Expenses + Spending Breakdown)
-app.get("/api/groups/:groupId/report", async (req, res) => {
-  try {
-    const groupId = req.params.groupId;
-
-    // Fetch all data
-    const [members, expenses] = await Promise.all([
-      core.getMembers(groupId),
-      core.getExpenses(groupId),
-    ]);
-
-    // Calculate using new logic
-    const report = calculateSettlements(members, expenses);
-
-    // Return structured data
-    res.json({
-      expenses,
-      settlement: report, // This now contains { totalGroupSpend, stats, plan }
-    });
-  } catch (e: any) {
-    console.error("Report Error:", e);
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Delete Expense Route
+// 7. Delete Expense (Undo/Unpaid)
 app.delete("/api/expenses/:id", async (req, res) => {
   try {
-    const { groupId } = req.body; // We need groupId to find the correct DB file
+    const { groupId } = req.body;
     const expenseId = req.params.id;
 
-    if (!groupId) throw new Error("Group ID required");
+    if (!groupId) throw new Error("Group ID required for deletion context");
 
     await core.deleteExpense(groupId, expenseId);
     res.json({ success: true });
@@ -135,37 +122,35 @@ app.delete("/api/expenses/:id", async (req, res) => {
   }
 });
 
-// Delete Group Route
-app.delete("/api/groups/:groupId", async (req, res) => {
+// 8. Get Report (Stats + Plan)
+app.get("/api/groups/:groupId/report", async (req, res) => {
   try {
-    const { passcode } = req.body; // Optional: Verify passcode before delete for security
     const groupId = req.params.groupId;
 
-    // Simple verification: Check if group exists first
-    const group = await core.getGroupDetails(groupId);
-    if (!group) throw new Error("Group not found");
+    const [members, expenses] = await Promise.all([
+      core.getMembers(groupId),
+      core.getExpenses(groupId),
+    ]);
 
-    // In a real app, check passcode here.
-    // For now, we trust the UI warning.
+    const settlement = calculateSettlements(members, expenses);
 
-    await core.deleteGroup(groupId);
-    res.json({ success: true, message: "Group deleted" });
+    res.json({ expenses, settlement });
   } catch (e: any) {
-    console.error("Delete Error:", e);
+    console.error("Report Error:", e);
     res.status(500).json({ error: e.message });
   }
 });
 
-// --- Server Startup Logic ---
+// --- SERVER STARTUP ---
 
 const startServer = async () => {
   try {
-    // Initialize Master DB (Registry) before accepting requests
     await initMasterDB();
     console.log("✅ Master Database Initialized");
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running at http://localhost:${PORT}`);
+    // UDPATE: Bind to 0.0.0.0 for Docker compatibility
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`🚀 Server running at http://0.0.0.0:${PORT}`);
     });
   } catch (error) {
     console.error("❌ Failed to start server:", error);
