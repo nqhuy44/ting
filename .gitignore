@@ -58,3 +58,5 @@ coverage/
 
 # Bower
 bower_components/
+
+.data/
