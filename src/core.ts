@@ -1,48 +1,57 @@
 import axios from "axios";
-import fs from "fs"; // NEW
-import path from "path"; // NEW
+import fs from "fs";
+import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { getMasterDB, getGroupDB, closeGroupDB } from "./db"; // Import closeGroupDB
+import { getMasterDB, getGroupDB, closeGroupDB } from "./db";
 import { Group, Member, Expense } from "./types";
 
-// --- HELPER: Fetch Live Exchange Rate ---
-const getExchangeRate = async (from: string, to: string): Promise<number> => {
-  // Optimization: If currencies match, no API call needed.
-  if (from === to) return 1;
+// --- HELPERS ---
 
+// Generate a random 6-character alphanumeric passcode (Uppercase)
+const generatePasscode = (): string => {
+  // Removed confusing characters like I, O, 1, 0
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+// Fetch real-time exchange rate
+const getExchangeRate = async (from: string, to: string): Promise<number> => {
+  if (from === to) return 1;
   try {
-    // Using a reliable free API
     const response = await axios.get(
       `https://api.exchangerate-api.com/v4/latest/${from}`
     );
     const rate = response.data.rates[to];
-
     if (!rate) {
       console.warn(`Warning: Rate for ${to} not found in ${from} response.`);
-      return 1; // Fallback to 1:1 to prevent crash, but logs warning
+      return 1;
     }
     return rate;
   } catch (error) {
     console.error("❌ Exchange Rate API Failed:", error);
-    return 1; // Fallback
+    return 1;
   }
 };
 
 // --- GROUP MANAGEMENT ---
 
-// 1. Create Group (Saved to Master DB)
+// 1. Create Group (Auto-generates Passcode)
 export const createGroup = (
   name: string,
-  passcode: string,
   currency: string,
   exchangeFee: number
 ): Promise<Group> => {
   return new Promise((resolve, reject) => {
+    const passcode = generatePasscode(); // Auto-generate
     const group: Group = {
       id: uuidv4(),
       name,
       passcode,
-      currency: currency || "VND", // Default Base Currency
+      currency: currency || "VND",
       exchangeFee: Number(exchangeFee) || 0,
       createdAt: Date.now(),
     };
@@ -73,19 +82,57 @@ export const createGroup = (
   });
 };
 
-// 2. Get Group Details (From Master DB)
-export const getGroupDetails = (groupId: string): Promise<Group> => {
+// 2. Get Group Details (Verifies Passcode - Case Insensitive)
+export const getGroupDetails = (
+  groupId: string,
+  providedPasscode?: string
+): Promise<Group> => {
   const master = getMasterDB();
   return new Promise((resolve, reject) => {
     master.get(`SELECT * FROM groups WHERE id = ?`, [groupId], (err, row) => {
       if (err) return reject(err);
       if (!row) return reject(new Error("Group not found"));
-      resolve(row as Group);
+
+      const group = row as Group;
+
+      // If a passcode is provided, verify it (Case Insensitive)
+      if (providedPasscode) {
+        if (group.passcode.toUpperCase() !== providedPasscode.toUpperCase()) {
+          return reject(new Error("Invalid Passcode"));
+        }
+      } else {
+        // Internal calls without passcode (e.g. deletion logic might check elsewhere)
+      }
+
+      resolve(group);
     });
   });
 };
 
-// --- MEMBER MANAGEMENT (Specific Group DB) ---
+// 3. Delete Group
+export const deleteGroup = async (groupId: string): Promise<void> => {
+  // Close connection to release file lock
+  await closeGroupDB(groupId);
+
+  // Delete from Master DB
+  const master = getMasterDB();
+  await new Promise<void>((resolve, reject) => {
+    master.run(`DELETE FROM groups WHERE id = ?`, [groupId], (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+
+  // Delete the physical file
+  const safeId = path.basename(groupId);
+  const dbPath = path.join(__dirname, "../data", `${safeId}.db`);
+
+  if (fs.existsSync(dbPath)) {
+    fs.unlinkSync(dbPath);
+  }
+};
+
+// --- MEMBER MANAGEMENT ---
 
 export const addMember = async (
   groupId: string,
@@ -107,13 +154,12 @@ export const getMembers = async (groupId: string): Promise<Member[]> => {
   return new Promise((resolve, reject) => {
     db.all(`SELECT * FROM members`, (err, rows: any[]) => {
       if (err) reject(err);
-      // Append groupId to the objects for consistency with the interface
       else resolve(rows.map((r) => ({ ...r, groupId })));
     });
   });
 };
 
-// --- EXPENSE MANAGEMENT (Specific Group DB + Currency Logic) ---
+// --- EXPENSE MANAGEMENT ---
 
 export const addExpense = async (
   groupId: string,
@@ -123,41 +169,39 @@ export const addExpense = async (
   paidBy: string,
   sharedBy: string[]
 ): Promise<Expense> => {
-  // 1. Fetch Group Settings (Base Currency & Fee %)
-  const group = await getGroupDetails(groupId);
-  const baseCurrency = group.currency;
-  const feePercent = group.exchangeFee;
+  // 1. Fetch Group Settings manually to avoid recursive passcode requirement
+  const master = getMasterDB();
+  const groupSettings: any = await new Promise((resolve, reject) => {
+    master.get(
+      `SELECT currency, exchangeFee FROM groups WHERE id = ?`,
+      [groupId],
+      (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      }
+    );
+  });
+
+  if (!groupSettings)
+    throw new Error("Group not found during expense addition");
+
+  const baseCurrency = groupSettings.currency;
+  const feePercent = groupSettings.exchangeFee;
 
   let exchangeRate = 1;
   let finalAmount = originalAmount;
 
-  // 2. Currency Conversion Logic
+  // 2. Conversion Logic
   if (originalCurrency !== baseCurrency) {
-    console.log(
-      `💱 Converting ${originalAmount} ${originalCurrency} -> ${baseCurrency}...`
-    );
-
     exchangeRate = await getExchangeRate(originalCurrency, baseCurrency);
-
     const converted = originalAmount * exchangeRate;
     const feeAmount = converted * (feePercent / 100);
     finalAmount = converted + feeAmount;
-
-    console.log(
-      `   Rate: ${exchangeRate}, Fee: ${feeAmount.toFixed(
-        2
-      )}, Final: ${finalAmount.toFixed(2)}`
-    );
   }
 
-  // 3. Determine Storage Format (Integer Math)
-  // - Currencies with NO decimals (VND, JPY, KRW): Store as rounded integer.
-  // - Currencies WITH decimals (USD, EUR): Store as Cents (x100).
+  // 3. Storage Logic (Integer Math)
   const zeroDecimalCurrencies = ["VND", "JPY", "KRW", "HUF", "CLP"];
   const isZeroDecimal = zeroDecimalCurrencies.includes(baseCurrency);
-
-  // If base is VND: 50000.5 -> 50001
-  // If base is USD: 10.50 -> 1050
   const dbAmount = isZeroDecimal
     ? Math.round(finalAmount)
     : Math.round(finalAmount * 100);
@@ -169,7 +213,7 @@ export const addExpense = async (
       id: uuidv4(),
       groupId,
       description,
-      amount: dbAmount, // The normalized amount used for calculation
+      amount: dbAmount,
       originalCurrency,
       originalAmount,
       exchangeRate,
@@ -188,7 +232,7 @@ export const addExpense = async (
         expense.originalAmount,
         expense.exchangeRate,
         expense.paidBy,
-        JSON.stringify(expense.sharedBy), // Arrays must be stringified for SQLite
+        JSON.stringify(expense.sharedBy),
         expense.createdAt,
       ],
       (err) => (err ? reject(err) : resolve(expense))
@@ -203,7 +247,6 @@ export const getExpenses = async (groupId: string): Promise<Expense[]> => {
       `SELECT * FROM expenses ORDER BY createdAt DESC`,
       (err, rows: any[]) => {
         if (err) return reject(err);
-        // Parse JSON string back to Array
         const expenses = rows.map((r) => ({
           ...r,
           groupId,
@@ -215,30 +258,7 @@ export const getExpenses = async (groupId: string): Promise<Expense[]> => {
   });
 };
 
-// Delete Group
-export const deleteGroup = async (groupId: string): Promise<void> => {
-  // 1. Close connection to release file lock
-  await closeGroupDB(groupId);
-
-  // 2. Delete from Master DB
-  const master = getMasterDB();
-  await new Promise<void>((resolve, reject) => {
-    master.run(`DELETE FROM groups WHERE id = ?`, [groupId], (err) => {
-      if (err) reject(err);
-      else resolve();
-    });
-  });
-
-  // 3. Delete the file
-  const safeId = path.basename(groupId);
-  const dbPath = path.join(__dirname, "../data", `${safeId}.db`);
-
-  if (fs.existsSync(dbPath)) {
-    fs.unlinkSync(dbPath);
-  }
-};
-
-// Delete Expense (For "Undo Payment" or fixing mistakes)
+// Delete Expense (Undo)
 export const deleteExpense = async (
   groupId: string,
   expenseId: string

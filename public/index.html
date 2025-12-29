@@ -2,235 +2,33 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ting - FirstDraft</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Ting | Expense Manager</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <style>
-      :root {
-        --primary: #4f46e5;
-        --bg: #f3f4f6;
-        --card: #ffffff;
-        --text: #1f2937;
-        --border: #e5e7eb;
-        --danger: #ef4444;
-        --success: #059669;
-      }
-      * {
-        box-sizing: border-box;
-        outline: none;
-      }
-      body {
-        font-family: "Inter", sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        padding: 2rem 1rem;
-        max-width: 900px;
-        margin: 0 auto;
-      }
-      h1,
-      h2,
-      h3,
-      h4 {
-        margin: 0;
-        font-weight: 700;
-      }
-      .hidden {
-        display: none !important;
-      }
-
-      /* Layout */
-      .card {
-        background: var(--card);
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1.5rem;
-        border: 1px solid var(--border);
-      }
-      .row {
-        display: flex;
-        gap: 1rem;
-      }
-
-      /* Controls */
-      label {
-        display: block;
-        font-size: 0.85rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: #4b5563;
-      }
-      input,
-      select {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        font-size: 1rem;
-        margin-bottom: 1rem;
-      }
-      button {
-        width: 100%;
-        padding: 0.8rem;
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: 0.2s;
-      }
-      button:hover {
-        opacity: 0.9;
-      }
-      button:disabled {
-        background: #9ca3af;
-        cursor: not-allowed;
-      }
-      button.secondary {
-        background: white;
-        border: 1px solid var(--border);
-        color: var(--text);
-      }
-      button.danger {
-        background: var(--danger);
-      }
-      button.sm {
-        width: auto;
-        padding: 0.3rem 0.8rem;
-        font-size: 0.8rem;
-      }
-      button.undo {
-        background: #fee2e2;
-        color: #b91c1c;
-        border: 1px solid #fecaca;
-      }
-
-      /* ID Box */
-      .id-box {
-        background: #e0e7ff;
-        color: #3730a3;
-        padding: 0.75rem;
-        border-radius: 8px;
-        font-family: monospace;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        cursor: pointer;
-        border: 1px dashed #6366f1;
-        margin-bottom: 1rem;
-      }
-
-      /* Tags */
-      .tag-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-      }
-      .user-tag {
-        padding: 0.5rem 1rem;
-        border: 1px solid var(--border);
-        border-radius: 99px;
-        cursor: pointer;
-        font-size: 0.9rem;
-        background: white;
-        user-select: none;
-      }
-      .user-tag.selected {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-      }
-
-      /* Tables & Lists */
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.95rem;
-      }
-      th {
-        text-align: left;
-        padding: 10px;
-        border-bottom: 2px solid var(--border);
-        color: #6b7280;
-        font-size: 0.85rem;
-      }
-      td {
-        padding: 10px;
-        border-bottom: 1px solid var(--border);
-      }
-      .amt-pos {
-        color: var(--success);
-        font-weight: 600;
-      }
-      .amt-neg {
-        color: var(--danger);
-        font-weight: 600;
-      }
-
-      .settle-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem;
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        margin-bottom: 0.5rem;
-      }
-      .settle-row.paid {
-        background: #ecfdf5;
-        border-color: #a7f3d0;
-        opacity: 0.9;
-      }
-
-      /* BMC Container */
-      .bmc-container {
-        margin-top: 2rem;
-        display: flex;
-        justify-content: center;
-      }
-
-      @media (max-width: 600px) {
-        .row {
-          flex-direction: column;
-          gap: 0;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div id="view-auth">
-      <h1
-        style="text-align: center; margin-bottom: 0.5rem; color: var(--primary)"
-      >
-        💸 Ting
-      </h1>
-      <p
-        style="
-          text-align: center;
-          color: #6b7280;
-          margin-bottom: 2rem;
-          font-size: 0.9rem;
-        "
-      >
-        Simple group expense management
-      </p>
+    <div id="view-auth" class="fade-in">
+      <div class="auth-header">
+        <h1>💸 Ting</h1>
+        <p style="color: var(--text-muted)">
+          Split expenses simply. No signup required.
+        </p>
+      </div>
 
       <div class="card">
-        <h3>Create New Group</h3>
+        <h3>✨ Create New Group</h3>
+        <div style="height: 1rem"></div>
         <label>Group Name</label>
-        <input type="text" id="cName" placeholder="e.g. China Trip" />
+        <input type="text" id="cName" placeholder="e.g. Ski Trip 2025" />
 
         <div class="row">
-          <div style="flex: 1">
-            <label>Passcode</label>
-            <input type="password" id="cPass" placeholder="Secret" />
-          </div>
           <div style="flex: 1">
             <label>Base Currency</label>
             <select id="cCurr">
@@ -242,30 +40,34 @@
               <option value="KRW">KRW</option>
             </select>
           </div>
+          <div style="flex: 1">
+            <label>Bank Fee (%)</label>
+            <input type="number" id="cFee" value="2.00" step="0.01" min="0" />
+          </div>
         </div>
 
-        <label>Bank Exchange Fee (%)</label>
-        <input
-          type="number"
-          id="cFee"
-          value="2.00"
-          step="0.01"
-          min="0"
-          oninput="validateFee(this)"
-        />
-
-        <button onclick="doCreate()">Create Group</button>
+        <button onclick="app.doCreate()">Start Group</button>
       </div>
 
-      <div style="text-align: center; margin-bottom: 1.5rem">— OR —</div>
+      <div class="auth-divider">OR JOIN EXISTING</div>
 
       <div class="card">
-        <h3>Join Existing</h3>
+        <label>Group ID</label>
         <input type="text" id="jId" placeholder="Paste Group ID here" />
-        <button class="secondary" onclick="doJoin()">Join Group</button>
+
+        <label>Passcode</label>
+        <input
+          type="text"
+          id="jPass"
+          placeholder="6-Character Code"
+          style="text-transform: uppercase"
+        />
+
+        <button class="secondary" onclick="app.doJoin()">Join Group</button>
       </div>
 
       <div class="bmc-container">
+        <div class="bmc-text">Built for friends. If you like it...</div>
         <script
           type="text/javascript"
           src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js"
@@ -282,69 +84,113 @@
       </div>
     </div>
 
-    <div id="view-dash" class="hidden">
+    <div id="view-dash" class="hidden fade-in">
       <div
         style="
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 1rem;
+          margin-bottom: 1.5rem;
         "
       >
         <div>
-          <h2 id="dTitle">Loading...</h2>
-          <div style="font-size: 0.85rem; color: #6b7280">
-            Base: <span id="dBase"></span> | Fee: <span id="dFee"></span>%
+          <h2 id="dTitle" style="font-size: 1.5rem">Loading...</h2>
+          <div
+            style="
+              font-size: 0.85rem;
+              color: var(--text-muted);
+              margin-top: 0.25rem;
+            "
+          >
+            Base: <strong id="dBase"></strong> • Fee:
+            <strong id="dFee"></strong>%
           </div>
         </div>
         <button class="secondary sm" onclick="location.reload()">Exit</button>
       </div>
 
-      <div class="id-box" onclick="copyId()" title="Click to copy">
-        <span
-          id="dId"
-          style="
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 80%;
-          "
-          >...</span
+      <div class="info-grid">
+        <div class="info-box" onclick="app.copyToClip(this, app.state.GID)">
+          <div class="ib-header">
+            <span class="label">Group ID</span>
+            <svg
+              class="copy-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+              ></path>
+            </svg>
+          </div>
+          <span class="val" id="dId">...</span>
+        </div>
+
+        <div
+          class="info-box pass-box"
+          onclick="app.copyToClip(this, app.state.GPASS)"
         >
-        <span
-          style="
-            font-size: 0.8rem;
-            background: #c7d2fe;
-            padding: 2px 6px;
-            border-radius: 4px;
-          "
-          >COPY</span
-        >
+          <div class="ib-header">
+            <span class="label">Passcode</span>
+            <svg
+              class="copy-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+              ></path>
+            </svg>
+          </div>
+          <span class="val" id="dPass">...</span>
+        </div>
       </div>
 
       <div class="card">
-        <h3>👥 Members</h3>
-        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+          "
+        >
+          <h3>👥 Members</h3>
+        </div>
+
+        <div class="tag-container" id="mList"></div>
+
+        <div class="row" style="margin-top: 1rem">
           <input
             type="text"
             id="mName"
-            placeholder="New Name"
+            placeholder="Add new person..."
             style="margin-bottom: 0"
           />
-          <button class="sm" onclick="doAddMember()">Add</button>
+          <button
+            class="secondary"
+            onclick="app.doAddMember()"
+            style="width: auto; white-space: nowrap"
+          >
+            + Add Member
+          </button>
         </div>
-        <div
-          id="mList"
-          class="tag-container"
-          style="margin-top: 1rem; margin-bottom: 0"
-        ></div>
       </div>
 
       <div class="card">
         <h3>🧾 Add Expense</h3>
-        <div style="margin-top: 1rem"></div>
+        <div style="height: 1.5rem"></div>
+
         <label>Description</label>
-        <input type="text" id="eDesc" placeholder="Description" />
+        <input type="text" id="eDesc" placeholder="e.g. Dinner at Haidilao" />
 
         <div class="row">
           <div style="flex: 2">
@@ -353,11 +199,11 @@
               type="text"
               id="eAmt"
               placeholder="0.00"
-              oninput="formatStrictMoney(this)"
+              oninput="app.formatStrictMoney(this)"
             />
           </div>
           <div style="flex: 1">
-            <label>Paid In</label>
+            <label>Currency</label>
             <select id="eCurr">
               <option value="VND">VND</option>
               <option value="CNY">CNY</option>
@@ -372,22 +218,51 @@
         <label>Paid By</label>
         <select id="ePayer"></select>
 
-        <label>Shared By</label>
+        <label>Split Among</label>
         <div id="eShared" class="tag-container"></div>
 
-        <button onclick="doAddExpense()">Add Expense</button>
+        <div style="margin-top: 1.5rem">
+          <button onclick="app.doAddExpense()">Add Expense</button>
+        </div>
       </div>
 
-      <div class="card" style="border-top: 4px solid var(--primary)">
-        <div style="text-align: center; margin-bottom: 1rem">
-          <h4 style="color: #6b7280">Total Group Spend</h4>
-          <h1 id="repTotal" style="color: var(--primary); font-size: 2rem">
+      <div
+        class="card"
+        style="border: 2px solid var(--primary); box-shadow: var(--shadow-lg)"
+      >
+        <div
+          style="
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+          "
+        >
+          <h4
+            style="
+              color: var(--text-muted);
+              text-transform: uppercase;
+              font-size: 0.75rem;
+              letter-spacing: 0.1em;
+              margin-bottom: 0.5rem;
+            "
+          >
+            Total Group Spend
+          </h4>
+          <h1
+            id="repTotal"
+            style="
+              color: var(--primary-dark);
+              font-size: 2.5rem;
+              letter-spacing: -1px;
+            "
+          >
             ...
           </h1>
         </div>
 
-        <h3>📊 Breakdown</h3>
-        <div style="overflow-x: auto; margin-bottom: 1.5rem">
+        <h3 style="margin-bottom: 1rem">📊 Balances</h3>
+        <div class="table-wrapper">
           <table>
             <thead>
               <tr>
@@ -400,408 +275,41 @@
             <tbody id="repStats"></tbody>
           </table>
         </div>
-
-        <div
-          style="
-            background: #f9fafb;
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-          "
-        >
-          <h3 style="margin-bottom: 0.5rem">🚀 Settlement Plan</h3>
-          <p style="font-size: 0.8rem; color: #6b7280">
-            Current outstanding debts:
-          </p>
-          <div id="repPlan"></div>
-
-          <div style="border-top: 1px dashed #d1d5db; margin: 1.5rem 0"></div>
-
-          <h3 style="margin-bottom: 0.5rem; color: #059669">
-            ✅ Payment History (Audit)
-          </h3>
-          <p style="font-size: 0.8rem; color: #6b7280">
-            Records of settled debts. Click 'Undo' to mark as unpaid.
-          </p>
-          <div id="repHistory"></div>
-        </div>
       </div>
 
-      <div class="card" style="border-color: var(--danger)">
-        <h3 style="color: var(--danger)">⚠️ Danger Zone</h3>
+      <div class="card">
+        <h3 style="margin-bottom: 1rem">🚀 Settlement Plan</h3>
+        <div id="repPlan"></div>
+
+        <div style="border-top: 1px dashed var(--border); margin: 2rem 0"></div>
+
+        <h3 style="margin-bottom: 1rem; color: var(--success-text)">
+          ✅ Payment History
+        </h3>
+        <div id="repHistory"></div>
+      </div>
+
+      <div
+        class="card"
+        style="border: 1px solid var(--danger-border); background: #fff5f5"
+      >
+        <h3 style="color: var(--danger-text)">⚠️ Danger Zone</h3>
         <p
           id="deleteMsg"
-          style="font-size: 0.9rem; color: #6b7280; margin-bottom: 1rem"
+          style="
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+          "
         >
-          Delete this group and all data.
+          Only possible when all debts are settled.
         </p>
-        <button id="btnDelete" class="danger" onclick="doDeleteGroup()">
+        <button id="btnDelete" class="danger" onclick="app.doDeleteGroup()">
           Delete Group
         </button>
       </div>
     </div>
 
-    <script>
-      let GID = null;
-      let G_CURRENCY = "VND";
-      let MEMBERS = [];
-      let IS_CLEAN = false;
-
-      // --- STRICT INPUT VALIDATION ---
-
-      function validateFee(input) {
-        input.value = input.value.replace(/[^0-9.]/g, "");
-        const parts = input.value.split(".");
-        if (parts.length > 2)
-          input.value = parts[0] + "." + parts.slice(1).join("");
-        if (parts.length === 2 && parts[1].length > 2) {
-          input.value = parseFloat(input.value).toFixed(2);
-        }
-      }
-
-      function formatStrictMoney(input) {
-        let val = input.value.replace(/[^0-9.]/g, "");
-        const parts = val.split(".");
-        if (parts.length > 2) {
-          val = parts[0] + "." + parts.slice(1).join("");
-        }
-        if (parts.length === 2 && parts[1].length > 2) {
-          parts[1] = parts[1].substring(0, 2);
-          val = parts.join(".");
-        }
-        input.value = val;
-      }
-
-      const fmtMoney = (amt, curr) => {
-        let val = amt;
-        if (!["VND", "JPY", "KRW"].includes(curr)) val = amt / 100;
-        return new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: curr,
-        }).format(val);
-      };
-
-      // --- CLIPBOARD ---
-      function copyId() {
-        navigator.clipboard.writeText(GID);
-        const el = document.querySelector(".id-box span:last-child");
-        const txt = el.innerText;
-        el.innerText = "COPIED!";
-        setTimeout(() => (el.innerText = txt), 2000);
-      }
-
-      // --- API CALLS ---
-      async function doCreate() {
-        const name = document.getElementById("cName").value;
-        const pass = document.getElementById("cPass").value;
-        const curr = document.getElementById("cCurr").value;
-        const fee = document.getElementById("cFee").value;
-
-        if (!name) return alert("Name required");
-        if (isNaN(fee) || fee === "") return alert("Fee must be a number");
-
-        try {
-          const res = await fetch("/api/groups", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name,
-              passcode: pass,
-              currency: curr,
-              exchangeFee: fee,
-            }),
-          });
-          const data = await res.json();
-          loadGroup(data.id);
-        } catch (e) {
-          alert("Error");
-        }
-      }
-
-      async function doJoin() {
-        const id = document.getElementById("jId").value;
-        if (id) loadGroup(id);
-      }
-
-      async function loadGroup(id) {
-        GID = id;
-        try {
-          const res = await fetch(`/api/groups/${id}`);
-          const data = await res.json();
-          if (data.error) throw new Error();
-
-          G_CURRENCY = data.currency;
-          document.getElementById("dTitle").innerText = data.name;
-          document.getElementById("dId").innerText = data.id;
-          document.getElementById("dBase").innerText = data.currency;
-          document.getElementById("dFee").innerText = data.exchangeFee;
-          document.getElementById("eCurr").value = data.currency;
-
-          document.getElementById("view-auth").classList.add("hidden");
-          document.getElementById("view-dash").classList.remove("hidden");
-          refresh();
-        } catch (e) {
-          alert("Group not found");
-        }
-      }
-
-      async function doAddMember() {
-        const name = document.getElementById("mName").value;
-        if (!name) return;
-        await fetch("/api/members", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ groupId: GID, name }),
-        });
-        document.getElementById("mName").value = "";
-        refresh();
-      }
-
-      async function doAddExpense() {
-        const desc = document.getElementById("eDesc").value;
-        let rawAmt = document.getElementById("eAmt").value;
-        const currency = document.getElementById("eCurr").value;
-        const paidBy = document.getElementById("ePayer").value;
-
-        const sharedBy = [];
-        document
-          .querySelectorAll(".user-tag.selected")
-          .forEach((tag) => sharedBy.push(tag.dataset.id));
-
-        if (!rawAmt || !paidBy || sharedBy.length === 0)
-          return alert("Fill all fields");
-
-        const btn = document.querySelector('button[onclick="doAddExpense()"]');
-        btn.innerText = "Processing...";
-        btn.disabled = true;
-
-        await fetch("/api/expenses", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            groupId: GID,
-            description: desc,
-            amount: parseFloat(rawAmt),
-            currency,
-            paidBy,
-            sharedBy,
-          }),
-        });
-
-        document.getElementById("eDesc").value = "";
-        document.getElementById("eAmt").value = "";
-        btn.innerText = "Add Expense";
-        btn.disabled = false;
-        refresh();
-      }
-
-      // --- SETTLEMENT LOGIC ---
-      async function doSettle(fromName, toName, amount, fromId, toId) {
-        const niceAmt = fmtMoney(amount, G_CURRENCY);
-        if (!confirm(`Confirm ${fromName} paid ${niceAmt} to ${toName}?`))
-          return;
-
-        const isZeroDecimal = ["VND", "JPY", "KRW"].includes(G_CURRENCY);
-        const floatAmt = isZeroDecimal ? amount : amount / 100;
-
-        await fetch("/api/expenses", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            groupId: GID,
-            description: `SETTLEMENT: ${fromName} -> ${toName}`,
-            amount: floatAmt,
-            currency: G_CURRENCY,
-            paidBy: fromId,
-            sharedBy: [toId],
-          }),
-        });
-        refresh();
-      }
-
-      async function undoSettlement(expenseId) {
-        if (
-          !confirm(
-            "Mark this debt as UNPAID? (This will delete the payment record)"
-          )
-        )
-          return;
-
-        await fetch(`/api/expenses/${expenseId}`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ groupId: GID }),
-        });
-        refresh();
-      }
-
-      // --- DELETE GROUP LOGIC ---
-      async function doDeleteGroup() {
-        if (!IS_CLEAN) {
-          alert(
-            "⛔ CANNOT DELETE: There are outstanding debts.\nPlease use the 'Mark Paid' buttons until all Net Balances are 0.00"
-          );
-          return;
-        }
-
-        if (!confirm("Are you sure? This is permanent.")) return;
-
-        const res = await fetch(`/api/groups/${GID}`, { method: "DELETE" });
-        if (res.ok) {
-          alert("Group deleted.");
-          location.reload();
-        } else {
-          alert("Failed to delete.");
-        }
-      }
-
-      // --- RENDER ---
-      async function refresh() {
-        // Members
-        const mRes = await fetch(`/api/groups/${GID}/members`);
-        MEMBERS = await mRes.json();
-
-        const payerSel = document.getElementById("ePayer");
-        const mList = document.getElementById("mList");
-        const sharedGrid = document.getElementById("eShared");
-        const curPayer = payerSel.value;
-
-        payerSel.innerHTML = "";
-        mList.innerHTML = "";
-        sharedGrid.innerHTML = "";
-        MEMBERS.forEach((m) => {
-          mList.innerHTML += `<div style="background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:99px; font-size:0.8rem;">${m.name}</div>`;
-          payerSel.innerHTML += `<option value="${m.id}">${m.name}</option>`;
-          const tag = document.createElement("div");
-          tag.className = "user-tag selected";
-          tag.dataset.id = m.id;
-          tag.innerText = m.name;
-          tag.onclick = () => tag.classList.toggle("selected");
-          sharedGrid.appendChild(tag);
-        });
-        if (curPayer) payerSel.value = curPayer;
-
-        // Report
-        const rRes = await fetch(`/api/groups/${GID}/report`);
-        const rep = await rRes.json();
-        const sett = rep.settlement;
-
-        document.getElementById("repTotal").innerText = fmtMoney(
-          sett.totalGroupSpend,
-          G_CURRENCY
-        );
-
-        // 1. Stats Table & Delete Check
-        const sBody = document.getElementById("repStats");
-        sBody.innerHTML = "";
-        IS_CLEAN = true;
-
-        sett.stats.forEach((s) => {
-          const color =
-            s.netBalance > 0 ? "amt-pos" : s.netBalance < 0 ? "amt-neg" : "";
-
-          if (Math.abs(s.netBalance) > 1) IS_CLEAN = false;
-
-          sBody.innerHTML += `<tr>
-                    <td>${s.memberName}</td>
-                    <td style="text-align:right">${fmtMoney(
-                      s.totalPaid,
-                      G_CURRENCY
-                    )}</td>
-                    <td style="text-align:right">${fmtMoney(
-                      s.totalShare,
-                      G_CURRENCY
-                    )}</td>
-                    <td style="text-align:right" class="${color}">${fmtMoney(
-            s.netBalance,
-            G_CURRENCY
-          )}</td>
-                </tr>`;
-        });
-
-        const delBtn = document.getElementById("btnDelete");
-        const delMsg = document.getElementById("deleteMsg");
-        if (IS_CLEAN) {
-          delBtn.disabled = false;
-          delBtn.title = "Ready to delete";
-          delMsg.innerText =
-            "All debts are cleared. You can delete this group safely.";
-          delMsg.style.color = "#059669";
-        } else {
-          delBtn.disabled = true;
-          delBtn.title = "Clear debts first";
-          delMsg.innerText =
-            "⚠️ Outstanding debts must be cleared (Net = 0) before deleting.";
-          delMsg.style.color = "#dc2626";
-        }
-
-        // 2. Projected Plan
-        const planDiv = document.getElementById("repPlan");
-        planDiv.innerHTML = "";
-        if (sett.plan.length === 0) {
-          planDiv.innerHTML =
-            '<div style="text-align:center; color:#059669; font-weight:600">No outstanding debts.</div>';
-        } else {
-          sett.plan.forEach((t) => {
-            const fromId = MEMBERS.find((m) => m.name === t.from)?.id;
-            const toId = MEMBERS.find((m) => m.name === t.to)?.id;
-
-            const row = document.createElement("div");
-            row.className = "settle-row";
-            row.innerHTML = `
-                        <span><b>${t.from}</b> owes <b>${t.to}</b></span>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span style="font-weight:700; color:var(--primary);">${fmtMoney(
-                              t.amount,
-                              G_CURRENCY
-                            )}</span>
-                            <button class="sm" style="background:#059669;">Mark Paid</button>
-                        </div>
-                    `;
-            row.querySelector("button").onclick = () =>
-              doSettle(t.from, t.to, t.amount, fromId, toId);
-            planDiv.appendChild(row);
-          });
-        }
-
-        // 3. Settlement History
-        const histDiv = document.getElementById("repHistory");
-        histDiv.innerHTML = "";
-
-        const settlements = rep.expenses.filter((e) =>
-          e.description.startsWith("SETTLEMENT:")
-        );
-
-        if (settlements.length === 0) {
-          histDiv.innerHTML =
-            '<div style="font-size:0.8rem; color:#9ca3af; text-align:center;">No payments recorded yet.</div>';
-        } else {
-          settlements.forEach((s) => {
-            const row = document.createElement("div");
-            row.className = "settle-row paid";
-            row.innerHTML = `
-                        <div style="font-size:0.9rem;">
-                            <span style="color:#059669">✔ Paid:</span> ${s.description.replace(
-                              "SETTLEMENT:",
-                              ""
-                            )}
-                            <div style="font-size:0.75rem; color:#6b7280;">${new Date(
-                              s.createdAt
-                            ).toLocaleDateString()}</div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span style="font-weight:600; color:#059669;">${fmtMoney(
-                              s.amount,
-                              G_CURRENCY
-                            )}</span>
-                            <button class="sm undo">Undo</button>
-                        </div>
-                    `;
-            row.querySelector("button").onclick = () => undoSettlement(s.id);
-            histDiv.appendChild(row);
-          });
-        }
-      }
-    </script>
+    <script src="app.js"></script>
   </body>
 </html>

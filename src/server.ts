@@ -14,15 +14,15 @@ app.use(express.static(path.join(__dirname, "../public")));
 
 // --- API ROUTES ---
 
-// 1. Create Group
+// 1. Create Group (FIXED: Removed passcode argument)
 app.post("/api/groups", async (req, res) => {
   try {
-    const { name, passcode, currency, exchangeFee } = req.body;
+    const { name, currency, exchangeFee } = req.body;
     if (!name) throw new Error("Group name is required");
 
+    // Core now auto-generates passcode, so we only pass 3 args
     const group = await core.createGroup(
       name,
-      passcode,
       currency || "VND",
       Number(exchangeFee) || 0
     );
@@ -32,14 +32,19 @@ app.post("/api/groups", async (req, res) => {
   }
 });
 
-// 2. Get Group Details
+// 2. Get Group Details (Requires Passcode Query Param)
 app.get("/api/groups/:groupId", async (req, res) => {
   try {
-    const group = await core.getGroupDetails(req.params.groupId);
-    if (!group) throw new Error("Group not found");
+    const groupId = req.params.groupId;
+    const passcode = req.query.passcode as string;
+
+    if (!passcode) throw new Error("Passcode required");
+
+    const group = await core.getGroupDetails(groupId, passcode);
     res.json(group);
   } catch (e: any) {
-    res.status(404).json({ error: e.message });
+    const status = e.message === "Invalid Passcode" ? 403 : 404;
+    res.status(status).json({ error: e.message });
   }
 });
 
@@ -47,14 +52,9 @@ app.get("/api/groups/:groupId", async (req, res) => {
 app.delete("/api/groups/:groupId", async (req, res) => {
   try {
     const groupId = req.params.groupId;
-    // Verify existence first
-    const group = await core.getGroupDetails(groupId);
-    if (!group) throw new Error("Group not found");
-
     await core.deleteGroup(groupId);
     res.json({ success: true, message: "Group deleted" });
   } catch (e: any) {
-    console.error("Delete Group Error:", e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -107,7 +107,7 @@ app.post("/api/expenses", async (req, res) => {
   }
 });
 
-// 7. Delete Expense (Undo/Unpaid)
+// 7. Delete Expense
 app.delete("/api/expenses/:id", async (req, res) => {
   try {
     const { groupId } = req.body;
@@ -122,7 +122,7 @@ app.delete("/api/expenses/:id", async (req, res) => {
   }
 });
 
-// 8. Get Report (Stats + Plan)
+// 8. Get Report
 app.get("/api/groups/:groupId/report", async (req, res) => {
   try {
     const groupId = req.params.groupId;
@@ -148,7 +148,6 @@ const startServer = async () => {
     await initMasterDB();
     console.log("✅ Master Database Initialized");
 
-    // UDPATE: Bind to 0.0.0.0 for Docker compatibility
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Server running at http://0.0.0.0:${PORT}`);
     });

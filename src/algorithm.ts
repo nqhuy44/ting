@@ -25,24 +25,42 @@ export const calculateSettlements = (
 
   // 2. Aggregate Totals
   expenses.forEach((exp) => {
-    totalGroupSpend += exp.amount;
+    const isSettlement = exp.description.startsWith("SETTLEMENT:");
 
-    // Add to Payer
-    const currentPaid = paidMap.get(exp.paidBy) || 0;
-    paidMap.set(exp.paidBy, currentPaid + exp.amount);
+    if (isSettlement) {
+      // --- SETTLEMENT LOGIC (Transfer) ---
+      // 1. Debtor (Payer) effectively contributes cash
+      const debtorPaid = paidMap.get(exp.paidBy) || 0;
+      paidMap.set(exp.paidBy, debtorPaid + exp.amount);
 
-    // Add to Sharers (Distribute logic)
-    const splitCount = exp.sharedBy.length;
-    if (splitCount > 0) {
-      const baseShare = Math.floor(exp.amount / splitCount);
-      const remainder = exp.amount % splitCount;
-
-      exp.sharedBy.forEach((memberId, index) => {
-        // Distribute remainder cents to first few people to ensure exact sum
-        const amountOwed = baseShare + (index < remainder ? 1 : 0);
-        const currentShare = shareMap.get(memberId) || 0;
-        shareMap.set(memberId, currentShare + amountOwed);
+      // 2. Creditor (Receiver) gets money back, reducing their "Advance"
+      exp.sharedBy.forEach((creditorId) => {
+        const creditorPaid = paidMap.get(creditorId) || 0;
+        // We subtract from their "Paid" because they have been reimbursed
+        paidMap.set(creditorId, creditorPaid - exp.amount);
       });
+
+      // NOTE: We do NOT touch shareMap. Settlements don't change consumption.
+    } else {
+      // --- NORMAL EXPENSE LOGIC ---
+      totalGroupSpend += exp.amount;
+
+      // 1. Add to Payer
+      const currentPaid = paidMap.get(exp.paidBy) || 0;
+      paidMap.set(exp.paidBy, currentPaid + exp.amount);
+
+      // 2. Add to Sharers (Consumption)
+      const splitCount = exp.sharedBy.length;
+      if (splitCount > 0) {
+        const baseShare = Math.floor(exp.amount / splitCount);
+        const remainder = exp.amount % splitCount;
+
+        exp.sharedBy.forEach((memberId, index) => {
+          const amountOwed = baseShare + (index < remainder ? 1 : 0);
+          const currentShare = shareMap.get(memberId) || 0;
+          shareMap.set(memberId, currentShare + amountOwed);
+        });
+      }
     }
   });
 
@@ -67,13 +85,12 @@ export const calculateSettlements = (
   });
 
   // 4. Calculate Settlement Plan (Greedy Algorithm)
-  // We filter out 0 balances to optimize
   const debtors = balances
     .filter((b) => b.net < -0.01)
-    .sort((a, b) => a.net - b.net); // Ascending
+    .sort((a, b) => a.net - b.net);
   const creditors = balances
     .filter((b) => b.net > 0.01)
-    .sort((a, b) => b.net - a.net); // Descending
+    .sort((a, b) => b.net - a.net);
 
   const plan: Transaction[] = [];
   let i = 0;
@@ -83,7 +100,6 @@ export const calculateSettlements = (
     let debtor = debtors[i];
     let creditor = creditors[j];
 
-    // Match the smaller of the two magnitudes
     let amount = Math.min(Math.abs(debtor.net), creditor.net);
 
     if (amount > 0) {
