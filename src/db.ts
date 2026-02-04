@@ -48,8 +48,14 @@ export const getGroupDB = (groupId: string): Promise<sqlite3.Database> => {
 
     db.serialize(() => {
       db.run(
-        `CREATE TABLE IF NOT EXISTS members (id TEXT PRIMARY KEY, name TEXT)`
+        `CREATE TABLE IF NOT EXISTS members (id TEXT PRIMARY KEY, name TEXT, paymentInfo TEXT)`
       );
+
+      // Migration: Add paymentInfo column if it doesn't exist (for existing DBs)
+      db.run(`ALTER TABLE members ADD COLUMN paymentInfo TEXT`, (err) => {
+        // Ignore error if column already exists
+      });
+
       db.run(
         `CREATE TABLE IF NOT EXISTS expenses (
                 id TEXT PRIMARY KEY, description TEXT, amount INTEGER, 

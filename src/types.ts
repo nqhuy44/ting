@@ -56,10 +56,19 @@ export interface Expense {
 }
 
 // ... Member, Balance, Transaction remain the same
+export interface PaymentInfo {
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
+  qrCode?: string; // Base64 string
+  note?: string;
+}
+
 export interface Member {
   id: string;
   groupId: string;
   name: string;
+  paymentInfo?: PaymentInfo;
 }
 export interface Balance {
   memberId: string;

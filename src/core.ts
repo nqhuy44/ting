@@ -27,13 +27,12 @@ const getExchangeRate = async (from: string, to: string): Promise<number> => {
     );
     const rate = response.data.rates[to];
     if (!rate) {
-      console.warn(`Warning: Rate for ${to} not found in ${from} response.`);
-      return 1;
+      throw new Error(`Rate for ${to} not found in ${from} response.`);
     }
     return rate;
   } catch (error) {
     console.error("❌ Exchange Rate API Failed:", error);
-    return 1;
+    throw new Error(`Failed to fetch exchange rate for ${from} -> ${to}`);
   }
 };
 
@@ -154,8 +153,34 @@ export const getMembers = async (groupId: string): Promise<Member[]> => {
   return new Promise((resolve, reject) => {
     db.all(`SELECT * FROM members`, (err, rows: any[]) => {
       if (err) reject(err);
-      else resolve(rows.map((r) => ({ ...r, groupId })));
+      else
+        resolve(
+          rows.map((r) => ({
+            ...r,
+            groupId,
+            paymentInfo: r.paymentInfo ? JSON.parse(r.paymentInfo) : undefined,
+          }))
+        );
     });
+  });
+};
+
+// 4. Update Member Details (Payment Info)
+export const updateMember = async (
+  groupId: string,
+  memberId: string,
+  paymentInfo: any
+): Promise<void> => {
+  const db = await getGroupDB(groupId);
+  return new Promise((resolve, reject) => {
+    db.run(
+      `UPDATE members SET paymentInfo = ? WHERE id = ?`,
+      [JSON.stringify(paymentInfo), memberId],
+      (err) => {
+        if (err) reject(err);
+        else resolve();
+      }
+    );
   });
 };
 

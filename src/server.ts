@@ -9,7 +9,7 @@ const app = express();
 const PORT = 3000;
 
 // Middleware
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "50mb" }));
 app.use(express.static(path.join(__dirname, "../public")));
 
 // --- API ROUTES ---
@@ -28,7 +28,8 @@ app.post("/api/groups", async (req, res) => {
     );
     res.json(group);
   } catch (e: any) {
-    res.status(500).json({ error: e.message });
+    console.error("❌ Error creating group:", e);
+    res.status(500).json({ error: e.message || "Internal Server Error" });
   }
 });
 
@@ -77,6 +78,18 @@ app.get("/api/groups/:groupId/members", async (req, res) => {
   try {
     const members = await core.getMembers(req.params.groupId);
     res.json(members);
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// 6. Update Member (Payment Info)
+app.put("/api/groups/:groupId/members/:memberId", async (req, res) => {
+  try {
+    const { groupId, memberId } = req.params;
+    const { paymentInfo } = req.body;
+    await core.updateMember(groupId, memberId, paymentInfo);
+    res.json({ success: true });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
