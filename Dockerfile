@@ -1,43 +1,53 @@
-# --- Stage 1: Builder ---
-FROM node:lts-alpine AS builder
-
+# --- Stage 1: Install Dependencies ---
+FROM node:24-alpine AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies (including devDependencies for TypeScript)
-COPY package*.json ./
-# 'npm ci' is faster and more reliable than 'npm install' for builds
+COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source code and build
-COPY tsconfig.json ./
-COPY src ./src
-COPY public ./public
+# --- Stage 2: Build Application ---
+FROM node:24-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line in case you want to disable telemetry during the build.
+# ENV NEXT_TELEMETRY_DISABLED 1
+
 RUN npm run build
 
-# --- Stage 2: Production Runner ---
-FROM node:lts-alpine
-
+# --- Stage 3: Production Runner ---
+FROM node:24-alpine AS runner
 WORKDIR /app
 
-# Set environment to production (optimizes Express/Node)
-ENV NODE_ENV=production
+ENV NODE_ENV production
+# ENV NEXT_TELEMETRY_DISABLED 1
 
-# Install ONLY production dependencies to keep image small
-COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
-
-# Copy built artifacts from the Builder stage
-COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
 
-# Create data directory and set permissions for the 'node' user
-# (Running as root is insecure; Alpine comes with a 'node' user)
-RUN mkdir -p data && chown -R node:node /app
+# Set the correct permission for prerender cache
+RUN mkdir .next
+RUN chown node:node .next
 
-# Switch to non-root user
+# Automatically leverage output traces to reduce image size
+# https://node.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+
+# Create data directory for SQLite
+RUN mkdir -p /app/data && chown -R node:node /app/data
+
 USER node
 
 EXPOSE 3000
 
-# Run node directly (saves memory vs running via npm)
-CMD ["node", "dist/server.js"]
+ENV PORT 3000
+# set hostname to localhost
+ENV HOSTNAME "0.0.0.0"
+
+# server.js is created by next build from the standalone output
+# https://nextjs.org/docs/pages/api-reference/next-config-js/output
+CMD ["node", "server.js"]
